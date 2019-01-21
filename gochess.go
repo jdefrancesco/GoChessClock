@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	_ "os"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	_ "github.com/jroimartin/gocui"
 )
 
@@ -39,16 +41,37 @@ func main() {
 
 	userInput := make(chan string)
 
-	// Grab user keyboard input
-	go func() { userInput <- os.Stdin.Read(make([]byte, 1)) }()
+	// Grab user keyboard input (cbreak is 0)
+	go func() {
+		err := keyboard.Open()
+		if err != nil {
+			panic(err)
+		}
+		defer keyboard.Close()
 
+		for {
+			c, _, err := keyboard.GetKey()
+			if err != nil {
+				panic(err)
+			}
+			userInput <- string(c)
+		}
+
+	}()
+
+loop:
 	for {
 		select {
 		case in := <-userInput:
-			log.Println("Received user input: %c", in)
+			if in == "q" {
+				break loop
+			}
+			fmt.Printf("Received user input: %s\n", in)
 		default:
 			log.Println("...")
 			time.Sleep(1 * time.Second)
 		}
 	}
+
+	fmt.Println("Quitting...")
 }
