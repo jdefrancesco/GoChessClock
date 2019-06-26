@@ -24,6 +24,11 @@ const (
 type ClockTime uint64
 type GameState uint64
 
+// secondsToMinutes converts seconds held by ClockTime to a string representing the
+// same time in minutes for display.
+func secondsToMinutes(s ClockTime) (t Time) {
+
+}
 
 type ChessClock struct {
 	whiteTime ClockTime
@@ -45,6 +50,27 @@ func (c *ChessClock) toggleActive() {
         case Black:
             c.active = White
         }
+}
+
+// decrementCurrentTimer will decrement the current active players 
+// time by one (in this case one second).
+func (c *ChessClock) decrementCurrentTimer() {
+
+    // NOTE: Add logic for timer running out (White Lose) and draws
+    switch c.active {
+    case White:
+        if c.whiteTime > 0 {
+            c.whiteTime--
+        } else {
+            log.Println("White is out of time..")
+        }
+    case Black:
+        if c.blackTime > 0 {
+            c.blackTime--
+        } else {
+            log.Println("Black is out of time")
+        }
+    }
 }
 
 func main() {
@@ -72,21 +98,30 @@ func main() {
 	}()
 
         // test struct.. 
-        // clk := &ChessClock{whiteTime: 100, blackTime: 100, active:White}
+        clk := &ChessClock{whiteTime: 100, blackTime: 100, active:White}
 	tick := time.Tick(1 * time.Second)
 
-loopend:
+Loopend:
 	for {
 		select {
 		case in := <-userInput:
+                    switch in {
+                    // Spacebar toggles the timer 
+                    case "\x00":
+                        clk.toggleActive()
+                    case "q":
+                        break Loopend
+                    }
 
-			if in == "q" {
-				break loopend
-			}
-			fmt.Printf("Received user input: %s\n", in)
 
 		case <-tick:
-			fmt.Println("tickkk")
+                    // Stop the chess clock application. Someone won, lost, or quit..
+                    if (clk.whiteTime == 0) || (clk.blackTime == 0) {
+                        fmt.Println("Clock stopping..."
+                    }
+                    clk.decrementCurrentTimer()
+                    // Display current timers
+                    log.Printf("Clock object: %+v \n", clk)
 
 		}
 	}
