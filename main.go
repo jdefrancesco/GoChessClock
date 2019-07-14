@@ -21,14 +21,8 @@ const (
 )
 
 // Hold clock time in seconds.
-type ClockTime uint64
-type GameState uint64
-
-// secondsToMinutes converts seconds held by ClockTime to a string representing the
-// same time in minutes for display.
-func secondsToMinutes(s ClockTime) (t Time) {
-
-}
+type ClockTime time.Duration
+type GameState time.Duration
 
 type ChessClock struct {
 	whiteTime ClockTime
@@ -41,8 +35,6 @@ type ChessClock struct {
 }
 
 // toggleActive toggles between the time left for the two players. 
-// Use this function to toggle between the two players so the correct
-// players clock decrements.
 func (c *ChessClock) toggleActive() {
         switch c.active {
         case White:
@@ -73,13 +65,19 @@ func (c *ChessClock) decrementCurrentTimer() {
     }
 }
 
-func main() {
+// printTime displays time as seconds to its minutes equivalent 
+func displayTimeMinutes(s ClockTime) (t time.Time) {
+    mins := s / time.Minute
+    secs := s % time.Minute
 
-	log.Println("Started chess clock main...")
+    fmt.Println("%d : %d ", mins, secs);
+}
+
+func main() {
 
 	userInput := make(chan string)
 
-	// Grab user keyboard input (cbreak is 0)
+	// Grab user keyboard input, (cbreak is 0) replace with termbox
 	go func() {
 		err := keyboard.Open()
 		if err != nil {
@@ -117,7 +115,7 @@ Loopend:
 		case <-tick:
                     // Stop the chess clock application. Someone won, lost, or quit..
                     if (clk.whiteTime == 0) || (clk.blackTime == 0) {
-                        fmt.Println("Clock stopping..."
+                        fmt.Println("Clock stopping...")
                     }
                     clk.decrementCurrentTimer()
                     // Display current timers

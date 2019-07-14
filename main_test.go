@@ -3,6 +3,7 @@ package main
 import "testing"
 import "log"
 
+// Sloppy test for toggling, lulz
 func TestToggleActive(t *testing.T) {
     clk := &ChessClock{whiteTime: 100, blackTime:100, active:White}
     log.Printf("currently... %+v", clk)
@@ -20,4 +21,8 @@ func TestToggleActive(t *testing.T) {
         t.Error("clock.active is ", clk.active, "Should be set to White")
     }
     log.Printf("Final toggle is: %+v", clk)
+}
+
+func TestDisplayTimeMinutes(t *testing.T) {
+    // 
 }
