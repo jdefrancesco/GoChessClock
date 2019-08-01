@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
-	_ "github.com/jroimartin/gocui"
+        _ "github.com/tjgq/ticker"
 )
 
 const (
@@ -28,8 +28,8 @@ type ChessClock struct {
 	whiteTime ClockTime
 	blackTime ClockTime
 
+        // Active players time. 
 	active uint64
-
 	// State of game (over, paused, active, etc)
 	gameState uint64
 }
@@ -65,12 +65,15 @@ func (c *ChessClock) decrementCurrentTimer() {
     }
 }
 
-// printTime displays time as seconds to its minutes equivalent 
-func displayTimeMinutes(s ClockTime) (t time.Time) {
-    mins := s / time.Minute
-    secs := s % time.Minute
+// displayTimeMinutes displays time as seconds to its minutes equivalent. 
+// just using this for scaffolding and debugging.
+func displayTimeMinutes(s ClockTime) (mins, secs uint) {
+    mins = uint(s) / 60
+    secs = uint(s) % 60
 
-    fmt.Println("%d : %d ", mins, secs);
+    fmt.Printf("%d : %d \n", mins, secs);
+
+    return mins, secs
 }
 
 func main() {
