@@ -65,13 +65,19 @@ func (c *ChessClock) decrementCurrentTimer() {
     }
 }
 
-// displayTimeMinutes displays time as seconds to its minutes equivalent. 
-// just using this for scaffolding and debugging.
-func displayTimeMinutes(s ClockTime) (mins, secs uint) {
+func (c *ChessClock) displayTimes() {
+
+    wMins, wSecs := secToMins(c.whiteTime)
+    bMins, bSecs := secToMins(c.blackTime)
+
+    fmt.Printf("\rWHITE: %d:%d\tBLACK: %d:%d", wMins, wSecs, bMins, bSecs)
+
+}
+
+// Take ClockTime type (seconds), return mins and secs values.
+func secToMins(s ClockTime) (mins, secs uint) {
     mins = uint(s) / 60
     secs = uint(s) % 60
-
-    fmt.Printf("%d : %d \n", mins, secs);
 
     return mins, secs
 }
@@ -119,13 +125,14 @@ Loopend:
                     // Stop the chess clock application. Someone won, lost, or quit..
                     if (clk.whiteTime == 0) || (clk.blackTime == 0) {
                         fmt.Println("Clock stopping...")
+                        break Loopend
                     }
+
                     clk.decrementCurrentTimer()
-                    // Display current timers
-                    log.Printf("Clock object: %+v \n", clk)
+                    clk.displayTimes()
 
 		}
 	}
 
-	fmt.Println("Quitting...")
+	fmt.Println("\nQuitting...")
 }
