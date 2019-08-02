@@ -70,16 +70,18 @@ func (c *ChessClock) displayTimes() {
     wMins, wSecs := secToMins(c.whiteTime)
     bMins, bSecs := secToMins(c.blackTime)
 
-    fmt.Printf("\rWHITE: %d:%d\tBLACK: %d:%d", wMins, wSecs, bMins, bSecs)
+    // Found a Golang bug if I mix \r and \t??
+    fmt.Printf("\rWHITE: %02d:%02d    BLACK: %02d:%02d", wMins, wSecs, bMins, bSecs)
+
 
 }
 
 // Take ClockTime type (seconds), return mins and secs values.
-func secToMins(s ClockTime) (mins, secs uint) {
-    mins = uint(s) / 60
-    secs = uint(s) % 60
+func secToMins(t ClockTime) (mins, secs uint) {
+        mins = uint(t) / 60
+        secs = uint(t) % 60
 
-    return mins, secs
+        return mins, secs
 }
 
 func main() {

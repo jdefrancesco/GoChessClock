@@ -27,8 +27,15 @@ func TestDisplayTimeMinutes(t *testing.T) {
     var secInput ClockTime = 180
 
     // Not a great test but hey...
-    minsOut, secsOut := displayTimeMinutes(secInput)
+    minsOut, secsOut := secToMins(secInput)
     if minsOut != 3 || secsOut !=  0 {
         t.Errorf("minsOut = %d and  secsOut = %d", minsOut, secsOut)
     }
+
+    secInput = 71
+    minsOut, secsOut = secToMins(secInput)
+    if minsOut != 1 || secsOut != 11 {
+        t.Errorf("minsOut = %d and secsOut = %d", minsOut, secsOut)
+    }
+
 }

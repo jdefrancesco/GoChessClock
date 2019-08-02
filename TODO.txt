@@ -1,5 +1,6 @@
 TODO:
 
-* Add CLI args for configuring time
+* Solve super-quick spacebar clock change (add better time resolution)
+* Add CLI args for configuring times
 * Add other game states like pause and such.
-* Add cool TUI clock font for big bold display
+* Add cool TUI clock font for big bold display (use termbox-go)
