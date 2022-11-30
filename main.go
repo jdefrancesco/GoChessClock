@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	_ "os"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/eiannone/keyboard"
-        _ "github.com/tjgq/ticker"
 )
 
 const (
@@ -15,6 +15,7 @@ const (
 	White = iota
 	Black
 
+	GameActive
 	GamePaused
 	GameReset
 	GameOver
@@ -28,66 +29,92 @@ type ChessClock struct {
 	whiteTime ClockTime
 	blackTime ClockTime
 
-        // Active players time. 
+	// Active players time.
 	active uint64
 	// State of game (over, paused, active, etc)
 	gameState uint64
 }
 
-// toggleActive toggles between the time left for the two players. 
-func (c *ChessClock) toggleActive() {
-        switch c.active {
-        case White:
-            c.active = Black
-        case Black:
-            c.active = White
-        }
+func NewChessClock(gameTime ClockTime) *ChessClock {
+
+	// Create new clock with corresponding times. White activtes first as
+	// in chess white always makes the first move.
+	clk := &ChessClock{whiteTime: gameTime, blackTime: gameTime, active: White}
+	return clk
 }
 
-// decrementCurrentTimer will decrement the current active players 
+// toggleActive toggles between the time left for the two players.
+func (c *ChessClock) toggleActive() {
+	switch c.active {
+	case White:
+		c.active = Black
+	case Black:
+		c.active = White
+	}
+}
+
+// decrementCurrentTimer will decrement the current active players
 // time by one (in this case one second).
 func (c *ChessClock) decrementCurrentTimer() {
 
-    // NOTE: Add logic for timer running out (White Lose) and draws
-    switch c.active {
-    case White:
-        if c.whiteTime > 0 {
-            c.whiteTime--
-        } else {
-            log.Println("White is out of time..")
-        }
-    case Black:
-        if c.blackTime > 0 {
-            c.blackTime--
-        } else {
-            log.Println("Black is out of time")
-        }
-    }
+	// NOTE: Add logic for timer running out (White Lose) and draws
+	switch c.active {
+	case White:
+		if c.whiteTime > 0 {
+			c.whiteTime--
+		} else {
+			log.Println("White is out of time..")
+		}
+	case Black:
+		if c.blackTime > 0 {
+			c.blackTime--
+		} else {
+			log.Println("Black is out of time")
+		}
+	}
 }
 
 func (c *ChessClock) displayTimes() {
 
-    wMins, wSecs := secToMins(c.whiteTime)
-    bMins, bSecs := secToMins(c.blackTime)
+	wMins, wSecs := secToMins(c.whiteTime)
+	bMins, bSecs := secToMins(c.blackTime)
 
-    // Found a Golang bug if I mix \r and \t??
-    fmt.Printf("\rWHITE: %02d:%02d    BLACK: %02d:%02d", wMins, wSecs, bMins, bSecs)
-
+	// Found a Golang bug if I mix \r and \t??
+	fmt.Printf("\rWHITE: %02d:%02d    BLACK: %02d:%02d", wMins, wSecs, bMins, bSecs)
 
 }
 
 // Take ClockTime type (seconds), return mins and secs values.
 func secToMins(t ClockTime) (mins, secs uint) {
-        mins = uint(t) / 60
-        secs = uint(t) % 60
+	mins = uint(t) / 60
+	secs = uint(t) % 60
 
-        return mins, secs
+	return mins, secs
 }
 
 func main() {
 
-	userInput := make(chan string)
+	var gameTime ClockTime = 0
 
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stdin, "Not enough args")
+		os.Exit(0)
+	}
+
+	if os.Args[1] != "" {
+		initTime := os.Args[1]
+		tmpGameTime, err := strconv.ParseInt(initTime, 10, 64)
+		if err != nil {
+			log.Fatal("error parsing time argument")
+		}
+		gameTime = ClockTime(tmpGameTime)
+
+	} else {
+		log.Println("No argument passed, will use default time value of 15 mins")
+		gameTime = ClockTime(15 * 60)
+	}
+
+	userInput := make(chan string)
 	// Grab user keyboard input, (cbreak is 0) replace with termbox
 	go func() {
 		err := keyboard.Open()
@@ -106,32 +133,30 @@ func main() {
 
 	}()
 
-        // test struct.. 
-        clk := &ChessClock{whiteTime: 100, blackTime: 100, active:White}
+	clk := NewChessClock(gameTime)
 	tick := time.Tick(1 * time.Second)
 
 Loopend:
 	for {
 		select {
 		case in := <-userInput:
-                    switch in {
-                    // Spacebar toggles the timer 
-                    case "\x00":
-                        clk.toggleActive()
-                    case "q":
-                        break Loopend
-                    }
-
+			switch in {
+			// Spacebar toggles the timer
+			case "\x00":
+				clk.toggleActive()
+			case "q":
+				break Loopend
+			}
 
 		case <-tick:
-                    // Stop the chess clock application. Someone won, lost, or quit..
-                    if (clk.whiteTime == 0) || (clk.blackTime == 0) {
-                        fmt.Println("Clock stopping...")
-                        break Loopend
-                    }
+			// Stop the chess clock application. Someone won, lost, or quit..
+			if (clk.whiteTime == 0) || (clk.blackTime == 0) {
+				fmt.Println("\nClock stopping...")
+				break Loopend
+			}
 
-                    clk.decrementCurrentTimer()
-                    clk.displayTimes()
+			clk.decrementCurrentTimer()
+			clk.displayTimes()
 
 		}
 	}
