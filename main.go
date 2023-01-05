@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/eiannone/keyboard"
+	"github.com/pterm/pterm"
 )
 
 const (
@@ -74,6 +75,7 @@ func (c *ChessClock) decrementCurrentTimer() {
 	}
 }
 
+// Show the time for each player.
 func (c *ChessClock) displayTimes() {
 
 	wMins, wSecs := secToMins(c.whiteTime)
@@ -94,13 +96,14 @@ func secToMins(t ClockTime) (mins, secs uint) {
 
 func main() {
 
-	var gameTime ClockTime = 0
-
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stdin, "Not enough args")
-		os.Exit(0)
+		fmt.Fprintln(os.Stdin, "Usage: gochessclk <TIME_SECONDS>")
+		os.Exit(1)
 	}
 
+	var gameTime ClockTime = 0
+
+	// If user supplied times, usse for both openents.
 	if os.Args[1] != "" {
 		initTime := os.Args[1]
 		tmpGameTime, err := strconv.ParseInt(initTime, 10, 64)
@@ -108,10 +111,14 @@ func main() {
 			log.Fatal("error parsing time argument")
 		}
 		gameTime = ClockTime(tmpGameTime)
-
 	} else {
 		log.Println("No argument passed, will use default time value of 15 mins")
 		gameTime = ClockTime(15 * 60)
+	}
+
+	// Make sure our clock isn't set to a useless zero.
+	if gameTime == 0 {
+		os.Exit(1)
 	}
 
 	userInput := make(chan string)
@@ -122,7 +129,6 @@ func main() {
 			panic(err)
 		}
 		defer keyboard.Close()
-
 		for {
 			c, _, err := keyboard.GetKey()
 			if err != nil {
@@ -130,11 +136,13 @@ func main() {
 			}
 			userInput <- string(c)
 		}
-
 	}()
 
 	clk := NewChessClock(gameTime)
 	tick := time.Tick(1 * time.Second)
+
+	// Start area for our TUI output
+	area, _ := pterm.DefaultArea.Start()
 
 Loopend:
 	for {
@@ -156,10 +164,19 @@ Loopend:
 			}
 
 			clk.decrementCurrentTimer()
-			clk.displayTimes()
+			wMins, wSecs := secToMins(clk.whiteTime)
+			// bMins, bSecs := secToMins(clk.whiteTime)
 
+			// Draw user times in cool font.
+			wpStr, _ := pterm.DefaultBigText.
+				WithLetters(pterm.NewLettersFromString(fmt.Sprintf("%02d %02d", wMins, wSecs))).
+				Srender() // Save current time in str.
+			wpStr = pterm.DefaultCenter.Sprint(wpStr)
+			area.Update(wpStr)
 		}
 	}
+
+	area.Stop()
 
 	fmt.Println("\nQuitting...")
 }
