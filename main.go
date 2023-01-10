@@ -81,9 +81,7 @@ func (c *ChessClock) displayTimes() {
 	wMins, wSecs := secToMins(c.whiteTime)
 	bMins, bSecs := secToMins(c.blackTime)
 
-	// Found a Golang bug if I mix \r and \t??
 	fmt.Printf("\rWHITE: %02d:%02d    BLACK: %02d:%02d", wMins, wSecs, bMins, bSecs)
-
 }
 
 // Take ClockTime type (seconds), return mins and secs values.
@@ -97,7 +95,7 @@ func secToMins(t ClockTime) (mins, secs uint) {
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stdin, "Usage: gochessclk <TIME_SECONDS>")
+		fmt.Fprintln(os.Stdin, "Usage: chessclk <TIME_SECONDS>")
 		os.Exit(1)
 	}
 
@@ -118,11 +116,12 @@ func main() {
 
 	// Make sure our clock isn't set to a useless zero.
 	if gameTime == 0 {
+		pterm.Warning.Println("[+] No time set on game clock.")
 		os.Exit(1)
 	}
 
-	userInput := make(chan string)
 	// Grab user keyboard input, (cbreak is 0) replace with termbox
+	userInput := make(chan string)
 	go func() {
 		err := keyboard.Open()
 		if err != nil {
@@ -138,12 +137,14 @@ func main() {
 		}
 	}()
 
+	// Create our chess clock.
 	clk := NewChessClock(gameTime)
 	tick := time.Tick(1 * time.Second)
 
+	fmt.Println("")
+
 	// Start area for our TUI output
 	area, _ := pterm.DefaultArea.Start()
-
 Loopend:
 	for {
 		select {
@@ -165,17 +166,18 @@ Loopend:
 
 			clk.decrementCurrentTimer()
 			wMins, wSecs := secToMins(clk.whiteTime)
-			// bMins, bSecs := secToMins(clk.whiteTime)
+			bMins, bSecs := secToMins(clk.blackTime)
 
-			// Draw user times in cool font.
-			wpStr, _ := pterm.DefaultBigText.
-				WithLetters(pterm.NewLettersFromString(fmt.Sprintf("%02d %02d", wMins, wSecs))).
-				Srender() // Save current time in str.
-			wpStr = pterm.DefaultCenter.Sprint(wpStr)
-			area.Update(wpStr)
+			// Display current clock times for each player.
+			// Aside: Formatting needs refactor. Four spaces seperate the respective times for each player.
+			clksStr, _ := pterm.DefaultBigText.
+				WithLetters(pterm.NewLettersFromString(fmt.Sprintf("%02d:%02d    ", wMins, wSecs) +
+					fmt.Sprintf("%02d:%02d", bMins, bSecs))).Srender()
+			clksStr = pterm.DefaultCenter.Sprint(clksStr)
+
+			area.Update(clksStr)
 		}
 	}
-
 	area.Stop()
 
 	fmt.Println("\nQuitting...")
