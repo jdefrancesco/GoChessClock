@@ -75,15 +75,6 @@ func (c *ChessClock) decrementCurrentTimer() {
 	}
 }
 
-// Show the time for each player.
-func (c *ChessClock) displayTimes() {
-
-	wMins, wSecs := secToMins(c.whiteTime)
-	bMins, bSecs := secToMins(c.blackTime)
-
-	fmt.Printf("\rWHITE: %02d:%02d    BLACK: %02d:%02d", wMins, wSecs, bMins, bSecs)
-}
-
 // Take ClockTime type (seconds), return mins and secs values.
 func secToMins(t ClockTime) (mins, secs uint) {
 	mins = uint(t) / 60
