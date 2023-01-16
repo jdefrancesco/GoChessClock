@@ -1,5 +1,6 @@
 # GoChessClock
 
-Simple Terminal Chess clock in Golang to learn it!
+Simple Terminal Chess clock in Golang 
 
-Much to be desired was thinking of going all out on it. I don't know of many (any?) CLI chess clocks..
+![ss-prev](ss/gochessclock.png)
+
