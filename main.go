@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/eiannone/keyboard"
@@ -93,13 +92,15 @@ func main() {
 	var gameTime ClockTime = 0
 
 	// If user supplied times, usse for both openents.
+	// TODO: Refactor with proper flags interface.
 	if os.Args[1] != "" {
 		initTime := os.Args[1]
-		tmpGameTime, err := strconv.ParseInt(initTime, 10, 64)
+		m, err := time.ParseDuration((initTime))
 		if err != nil {
 			log.Fatal("error parsing time argument")
 		}
-		gameTime = ClockTime(tmpGameTime)
+		// Convert to proper type
+		gameTime = ClockTime(m.Round(time.Second).Seconds())
 	} else {
 		log.Println("No argument passed, will use default time value of 15 mins")
 		gameTime = ClockTime(15 * 60)
