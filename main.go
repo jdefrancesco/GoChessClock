@@ -88,7 +88,7 @@ func main() {
 	var gameTime ClockTime = 0
 
 	// flags for the different game modes, and a custom time
-	gameMode := flag.String("m", "rapid", "Game modes: \n- \"rapid\" (15 min)\n- \"blitz\" (3 min)\n- \"classical\" (120 min)\n- Define a custom time: \"-m time 60\"\n")
+	gameMode := flag.String("m", "rapid", "Game modes: \n- \"rapid\" (15 min)\n- \"blitz\" (3 min)\n- \"classical\" (120 min)\n- Define a custom time (in secs): \"-m time 60\"\n")
 
 	flag.Parse()
 
