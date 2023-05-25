@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/eiannone/keyboard"
@@ -83,27 +85,27 @@ func secToMins(t ClockTime) (mins, secs uint) {
 }
 
 func main() {
-
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stdin, "Usage: chessclk <TIME_SECONDS>")
-		os.Exit(1)
-	}
-
 	var gameTime ClockTime = 0
 
-	// If user supplied times, usse for both openents.
-	// TODO: Refactor with proper flags interface.
-	if os.Args[1] != "" {
-		initTime := os.Args[1]
-		m, err := time.ParseDuration((initTime))
+	// flags for the different game modes, and a custom time
+	gameMode := flag.String("m", "rapid", "Game modes: \n- \"rapid\" (15 min)\n- \"blitz\" (3 min)\n- \"classical\" (120 min)\n- Define a custom time (in secs): \"-m time 60\"\n")
+
+	flag.Parse()
+
+	switch *gameMode {
+	case "blitz":
+		gameTime = ClockTime(180)
+	case "classical":
+		gameTime = ClockTime(7200)
+	case "time":
+		secs, err := strconv.Atoi(flag.Args()[0])
 		if err != nil {
-			log.Fatal("error parsing time argument")
+			pterm.Warning.Println("[+] Invalid time given")
+			os.Exit(1)
 		}
-		// Convert to proper type
-		gameTime = ClockTime(m.Round(time.Second).Seconds())
-	} else {
-		log.Println("No argument passed, will use default time value of 15 mins")
-		gameTime = ClockTime(15 * 60)
+		gameTime = ClockTime(secs)
+	default:
+		gameTime = ClockTime(900)
 	}
 
 	// Make sure our clock isn't set to a useless zero.
